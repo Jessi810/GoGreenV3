@@ -1,0 +1,259 @@
+﻿@model IEnumerable<GoGreenV3.Models.MarkerModel>
+
+@{
+    ViewBag.Title = "Monitor";
+}
+
+<script src="~/Scripts/gmaps-monitor.js"></script>
+<script>
+    // Google Maps variables
+    var m = [];
+    var map;
+    var marker;
+    var markersArray = [];  // Marker objects
+    var markers = [];       // Google Maps Marker objects
+    var infowindow;
+    var infoWindowAlter;
+    var markerControl = "<button class='btn btn-success btn-small' style='width: 120px' onclick='alterLight()'>Green</button><button class='btn btn-danger btn-small' style='width: 120px'>Red</button>";
+    var alterControl = "<button class='btn btn-success btn-small' style='width: 120px' onclick='alterLight()'>Relinquish Control</button>"
+    
+    // Firebase variables
+    var database;
+
+    function waitPage() {
+        window.onload = function() {
+            initGoogleMapsVariables();
+
+            database = firebase.database().ref();
+
+            initMap();
+            setMarkers();
+        };
+    }
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map-monitor'), {
+            zoom: 17,
+            center: { lat: 16.4023, lng: 120.5960 }
+        });
+
+        google.maps.event.addListener(map, 'click', function() {
+            infowindow.close();
+        });
+
+        google.maps.event.addListener(map, 'drag', function() {
+            infowindow.close();
+        });
+    }
+
+    function initGoogleMapsVariables() {
+        infowindow = new google.maps.InfoWindow({
+            content: markerControl
+        });
+        infowindowAlter = new google.maps.InfoWindow({
+            content: alterControl
+        });
+    }
+
+    function setMarkers() {
+        var color;
+
+        for (var c = 0; c < markersArray.length; c++) {
+            color = initColorUrl(markersArray[c][1]);
+
+            markers[c] = new google.maps.Marker({
+                id: markersArray[c][0],
+                map: map,
+                position: { lat: markersArray[c][3], lng: markersArray[c][4] },
+                icon: color
+            });
+
+            m[c][2] = color.substring(color.lastIndexOf('/') + 1, color.lastIndexOf('.'));
+
+            database.child('markers/' + markersArray[c][0]).update({
+                light: color.substring(color.lastIndexOf('/') + 1, color.lastIndexOf('.'))
+            });
+
+            google.maps.event.addListener(markers[c], 'click', function () {
+                infowindow.open(map, this);
+            });
+        }
+
+        countdown(7000);
+    }
+    
+    function initColorUrl(type) {
+        switch (type) {
+            case '1': return '/Images/green.png';
+            case '2': return '/Images/red.png';
+            case '3': return '/Images/green.png';
+        }
+
+        return null;
+    }
+    
+    function initColorUrl2(color) {
+        switch (color) {
+            case 'green': return '/Images/green.png';
+            case 'red': return '/Images/red.png';
+            case 'yellow': return '/Images/yellow.png';
+            case 'altered': return '/Images/altered.png';
+        }
+
+        return null;
+    }
+
+    function countdown(interval) {
+        console.log('Countdown started');
+
+        var traffic = setInterval(function() {
+            for (var c = 0; c < markers.length; c++) {
+
+                if (m[c][2] == 'green' && m[c][3] == 0) {
+                    m[c][2] = 'red';
+
+                    database.child('markers/' + m[c][0]).update({
+                        light: 'red'
+                    });
+                    
+                    markers[c] = null;
+                    markers[c] = new google.maps.Marker({
+                        id: markersArray[c][0],
+                        map: map,
+                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
+                        icon: initColorUrl2('red')
+                    });
+                } // if
+                else if (m[c][2] == 'red' && m[c][3] == 0) {
+                    m[c][2] = 'green';
+
+                    database.child('markers/' + m[c][0]).update({
+                        light: 'green'
+                    });
+
+                    markers[c] = null;
+                    markers[c] = new google.maps.Marker({
+                        id: markersArray[c][0],
+                        map: map,
+                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
+                        icon: initColorUrl2('green')
+                    });
+                } // else if
+            } // for
+        }, interval); // setInterval()
+    } // countdown()
+    
+    function countdown2(interval) {
+        var time = interval;
+
+        var traffic2 = setInterval(function() {
+            for (var c = 0; c < markers.length; c++) {
+                if (m[c][2] == 'green' && m[c][3] == 0) {
+                    m[c][2] = 'yellow';
+
+                    database.child('markers/' + m[c][0]).update({
+                        light: 'yellow'
+                    });
+
+                    markers[c] = null;
+                    markers[c] = new google.maps.Marker({
+                        id: markersArray[c][0],
+                        map: map,
+                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
+                        icon: initColorUrl2('yellow')
+                    });
+                }
+            }
+
+            if (time != 7000) {
+                console.log("Added 3 sec");
+                time += 3000;
+            }
+        }, time)
+    }
+</script>
+
+@foreach (var item in Model)
+{
+    <script>initMarkerArray(@item.Id, '@item.Type', '@item.Status', @item.Latitude, @item.Longitude, @item.IsWorking.ToString().ToLower(), @item.IsControllable.ToString().ToLower(), ctr());</script>
+}
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
+            <h4>Traffic Light</h4>
+            <div class="col-md-6 text-right">
+                <strong>Total:</strong><br />
+                <strong>Online:</strong><br />
+                <strong>Offline:</strong><br />
+                <strong>Working:</strong><br />
+                <strong>Controllable:</strong><br />
+            </div>
+            <div class="col-md-6 text-left">
+                @Model.Count()<br />
+                @ViewBag.OnlineCount<br />
+                @ViewBag.OfflineCount<br />
+                @ViewBag.WorkingCount<br />
+                @ViewBag.ControllableCount<br />
+            </div>
+            <div class="col-md-12">
+                <img src="~/Images/green.png" />Green Light
+            </div>
+            <div class="col-md-12">
+                <img src="~/Images/red.png" />Red Light
+            </div>
+            <div class="col-md-12">
+                <img src="~/Images/yellow.png" />Yellow Light
+            </div>
+        </div>
+
+        <div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
+            <h4>Rescuer</h4>
+            <button onclick="Alter();">Alter</button>
+        </div>
+
+        @*<div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
+            <strong>Tips:</strong><br />
+            <ul>
+                <li>Click marker to alter light.</li>
+            </ul>
+        </div>*@
+    </div>
+
+    <div class="col-md-9">
+        <div id="map-monitor"></div>
+    </div>
+</div>
+<script>
+    function Alter() {
+        m[4][3] = 1;
+
+        database.child('markers/27').update({
+            altered: true
+        });
+
+        markers[4] = null;
+        markers[4] = new google.maps.Marker({
+            id: markersArray[4][0],
+            map: map,
+            position: { lat: markersArray[4][3], lng: markersArray[4][4] },
+            icon: initColorUrl2('altered')
+        });
+
+        google.maps.event.addListener(markers[4], 'click', function () {
+            infowindowAlter.open(map, this);
+        });
+    }
+
+    function alterLight() {
+        database.child('markers/27').update({
+            altered: false
+        });
+        m[4][3] = 0;
+        infowindowAlter.close();
+    }
+</script>
+<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
+<script src="~/Scripts/firebase-config.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyBnRjrz-o64fdMh2-qS6xK1WeKIMwcM76I&libraries=places&callback=waitPage" async defer></script>
+<script src="~/Scripts/traffic-light-simulator.js"></script>

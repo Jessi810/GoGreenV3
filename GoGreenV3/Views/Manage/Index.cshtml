@@ -1,0 +1,161 @@
+﻿@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.EntityFramework
+@using GoGreenV3.Models
+@model GoGreenV3.Models.IndexViewModel
+@{
+    ViewBag.Title = "Profile";
+}
+
+@{
+    if(!String.IsNullOrEmpty(ViewBag.StatusMessage) && Request.Url.Query.ToLower().Contains("success"))
+    {
+        <div id = "messageAlert" class="alert alert-success alert-dismissable" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            @ViewBag.StatusMessage
+        </div>
+    }
+    else if (!String.IsNullOrEmpty(ViewBag.StatusMessage) && Request.Url.Query.ToLower().Contains("error"))
+    {
+        <div id="messageAlert" class="alert alert-danger alert-dismissable" role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            @ViewBag.StatusMessage
+        </div>
+    }
+
+    var userStore = new UserStore<ApplicationUser>(new ApplicationDbContext());
+    var manager = new UserManager<ApplicationUser>(userStore);
+    var currentUser = manager.FindById(User.Identity.GetUserId());
+
+    var totalMinutes = (DateTime.Now - currentUser.LastActive).TotalMinutes;
+    var totalMinutesString = totalMinutes.ToString().Substring(0, totalMinutes.ToString().IndexOf('.'));
+    totalMinutesString = totalMinutesString.Insert(totalMinutesString.ToString().Length, " minutes ago");
+    if (totalMinutesString.Equals("0 minutes ago"))
+    {
+        totalMinutesString = "Just now";
+    }
+}
+
+<div class="row">
+    <div class="col-md-3 img-rounded" style="background-color: rgb(239, 234, 234); padding: 0">
+        <img class="img-thumbnail" src="@currentUser.AvatarUrl" style="width: 160px; height: 160px; margin-top: 12px; margin-left: 12px" />
+
+        <div style="margin: 12px;">
+            <strong class="text-primary" style="font-size: 20px">@currentUser.GetFullName</strong> <br /><br />
+            Member since: @currentUser.MemberSince.ToString("MMM' 'd', 'yyyy' 'h:mm:ss tt") <br />
+            Last active: @totalMinutesString
+        </div>
+
+        <div style="margin: 12px 0;">
+            <a href="@Url.Action("EditProfile", "Account")" id="profileButtons">Edit Profile</a>
+            <a href="@Url.Action("ChangePassword", "Manage")" id="profileButtons">Change Password</a>
+            <a href="@Url.Action("EditAgency", "Account")" id="profileButtons">Change Agency</a>
+            <a href="javascript:document.getElementById('logoutForm').submit()" id="profileButtons" style="border-bottom: 1px solid;">Log Out</a>
+        </div>
+    </div>
+
+    <div id="profileBody" class="col-md-9">
+        <div id="profileBodyHeader">
+            @currentUser.GetFullName's Profile
+        </div>
+        <div id="profileSubBody" class="img-rounded">
+            <h4>Personal Info</h4>
+            <dl class="dl-horizontal">
+                <dt>Name:</dt>
+                <dd>@currentUser.GetFullName</dd>
+                <dt>Email:</dt>
+                <dd>@currentUser.Email</dd>
+                <dt>Birthdate:</dt>
+                <dd>@currentUser.BirthDate</dd>
+                <dt>Cellphone #:</dt>
+                <dd>@currentUser.CellphoneNumber</dd>
+                <dt>Telphone #:</dt>
+                <dd>@currentUser.TelephoneNumber</dd>
+            </dl>
+        </div>
+        <div id="profileSubBody" class="img-rounded">
+            <h4>Working at</h4>
+            <dl class="dl-horizontal">
+                <dt>Agency:</dt>
+                <dd>@currentUser.Agency</dd>
+                <dt>Address:</dt>
+                <dd>@ViewBag.AgencyAddress</dd>
+            </dl>
+        </div>
+    </div>
+
+    @*<div class="col-md-9">
+        <h4>Change your account settings here</h4>
+        <dl class="dl-horizontal">
+            <dt>Profile:</dt>
+            <dd>
+                @Html.ActionLink("Edit your profile", "EditProfile", "Account")
+            </dd>
+            <dt>Password:</dt>
+            <dd>
+                @if (Model.HasPassword)
+            {
+                    @Html.ActionLink("Change your password", "ChangePassword")
+                }
+                else
+                {
+                    @Html.ActionLink("Create", "SetPassword")
+                }
+            </dd>
+            <dt>External Logins:</dt>
+            <dd>
+                @Model.Logins.Count [
+                @Html.ActionLink("Manage", "ManageLogins") ]
+            </dd>
+            
+                Phone Numbers can used as a second factor of verification in a two-factor authentication system.
+
+                 See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+                    for details on setting up this ASP.NET application to support two-factor authentication using SMS.
+
+                 Uncomment the following block after you have set up two-factor authentication
+            
+            <dt>Phone Number:</dt>
+            <dd>
+                @(Model.PhoneNumber ?? "None") [
+                @if (Model.PhoneNumber != null)
+                {
+                    @Html.ActionLink("Change", "AddPhoneNumber")
+                    @: &nbsp;|&nbsp;
+                    @Html.ActionLink("Remove", "RemovePhoneNumber")
+                }
+                else
+                {
+                    @Html.ActionLink("Add", "AddPhoneNumber")
+                }
+                ]
+            </dd>
+            <dt>Two-Factor Authentication:</dt>
+            <dd>
+                <p>
+                    There are no two-factor authentication providers configured. See <a href="http://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
+                    for details on setting up this ASP.NET application to support two-factor authentication.
+                </p>
+                @if (Model.TwoFactor)
+                {
+                    using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <text>Enabled
+                        <input type="submit" value="Disable" class="btn btn-link" />
+                        </text>
+                    }
+                }
+                else
+                {
+                    using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <text>Disabled
+                        <input type="submit" value="Enable" class="btn btn-link" />
+                        </text>
+                    }
+                }
+            </dd>
+        </dl>
+    </div>*@
+</div>

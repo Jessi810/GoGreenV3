@@ -1,0 +1,38 @@
+﻿@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.EntityFramework
+@using GoGreenV3.Models
+
+@if (Request.IsAuthenticated)
+{
+    using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+    {
+        @Html.AntiForgeryToken()
+
+        var userStore = new UserStore<ApplicationUser>(new ApplicationDbContext());
+        var manager = new UserManager<ApplicationUser>(userStore);
+        var currentUser = manager.FindById(User.Identity.GetUserId());
+
+        <ul class="nav navbar-nav navbar-right">
+            <li>
+                <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">@currentUser.GetFullName <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-header">Accounts:</li>
+                    <li>
+                        @Html.ActionLink("Profile", "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Manage" })
+                    </li>
+                    <li role="separator" class="divider"></li>
+                    <li>
+                        <a href="javascript:document.getElementById('logoutForm').submit()">Log Out</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    }
+}
+else
+{
+    <ul class="nav navbar-nav navbar-right">
+        <li>@Html.ActionLink("Register", "Register", "Account", routeValues: null, htmlAttributes: new { id = "registerLink" })</li>
+        <li>@Html.ActionLink("Log in", "Login", "Account", routeValues: null, htmlAttributes: new { id = "loginLink" })</li>
+    </ul>
+}

@@ -1,0 +1,38 @@
+﻿@model IEnumerable<GoGreenV3.Models.MarkerModel>
+
+@{
+    ViewBag.Title = "Update Markers";
+}
+
+<h2>Update Markers To Firebase</h2>
+<h4>Updating all marker information on Firebase. Please wait while operation is finish.</h4>
+<hr />
+<p id="update-list"></p>
+
+<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
+<script src="~/Scripts/firebase-config.js"></script>
+<script>
+    var database = firebase.database().ref();
+</script>
+
+@foreach (var item in Model)
+{
+    <script>
+        // Adds information of markers to Firebase Real-time database
+        database.child('markers/' + @item.Id).update({
+            address: '@item.Location',
+            description: '@item.Description',
+            type: @item.Type,
+            status: '@item.Status',
+            lat: @item.Latitude,
+            lng: @item.Longitude,
+            working: @item.IsWorking.ToString().ToLower(),
+            controllable: @item.IsControllable.ToString().ToLower(),
+            light: '',
+            altered: false
+        }, function() {
+            document.getElementById("update-list").innerHTML += "Marker-@item.Id updated to Firebase<br />";
+            console.log("Marker-@item.Id updated to Firebase");
+        });
+    </script>
+}

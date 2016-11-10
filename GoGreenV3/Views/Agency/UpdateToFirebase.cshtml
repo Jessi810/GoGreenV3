@@ -1,0 +1,51 @@
+﻿@model IEnumerable<GoGreenV3.Models.AgencyModel>
+
+<div class="row">
+    <div class="col-md-6 col-md-offset-3">
+        <h2 id="procHead" class="text-center">Processing...</h2>
+        <div class="progress">
+            <div id="progressBar" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                Operation in effect
+            </div>
+        </div>
+        <a href="@Url.Action("Index")" id="continueBtn" class="hidden">Go to list</a>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
+<script src="~/Scripts/firebase-config.js"></script>
+<script>
+    var database = firebase.database().ref();
+    var itemCount = @ViewBag.ItemCount;
+    var count = 0;
+</script>
+
+@foreach (var item in Model)
+{
+    <script>
+        database.child('agencies/' + @item.Id).update({
+            id: @item.Id,
+            type: '@item.Type',
+            name: '@item.Name',
+            address: '@item.Address',
+            lat: @item.Latitude,
+            lng: @item.Longitude,
+            description: '@item.Description',
+            website: '@item.WebsiteUrl',
+            email: '@item.Email',
+            contact: '@item.Contact',
+        },
+        function() {
+            if (++count == itemCount) {
+                console.log("Finish");
+                document.getElementById('continueBtn').classList.remove("hidden");
+                document.getElementById('continueBtn').classList.add("show");
+                document.getElementById('continueBtn').classList.add("btn");
+                document.getElementById('continueBtn').classList.add("btn-success");
+                document.getElementById('progressBar').classList.remove("active");
+                document.getElementById('progressBar').innerHTML = "Finish";
+                document.getElementById('procHead').innerHTML = "Operation Complete";
+            }
+        });
+    </script>
+}

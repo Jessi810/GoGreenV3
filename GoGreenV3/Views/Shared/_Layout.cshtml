@@ -1,0 +1,85 @@
+﻿@using Microsoft.AspNet.Identity
+@using Microsoft.AspNet.Identity.EntityFramework
+@using GoGreenV3.Models
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Go Green</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="@Url.Action("Index", "Home")">
+                    <img alt="Brand" src="~/Images/logo.png" style="height: 62px; position: relative; top: -20px" />
+                </a>
+                @Html.ActionLink("GO GREEN", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    @if (User.IsInRole("Developer") || User.IsInRole("Superuser") || User.IsInRole("Admin") || User.IsInRole("Moderator") || User.IsInRole("Operator"))
+                    {
+                        <li>
+                            <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Marker <span class="caret"></span></a>
+                            <ul class="dropdown-menu">
+                                <li>@Html.ActionLink("Marker List", "Index", "Marker")</li>
+                                <li>@Html.ActionLink("Add Marker", "Create", "Marker")</li>
+                            </ul>
+                        </li>
+                    }
+                    
+                    <li>
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Agency <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            @if (User.IsInRole("Developer") || User.IsInRole("Superuser") || User.IsInRole("Admin") || User.IsInRole("Moderator") || User.IsInRole("Agent"))
+                            {
+                                <li>@Html.ActionLink("Agency List", "Index", "Agency")</li>
+                                <li>@Html.ActionLink("Add Agency", "Create", "Agency")</li>
+                            }
+                            else
+                            {
+                                <li>@Html.ActionLink("Agency List", "AgencyList", "Agency")</li>
+                            }
+                        </ul>
+                    </li>
+                    @if (User.IsInRole("Developer") || User.IsInRole("Superuser") || User.IsInRole("Admin") || User.IsInRole("Operator"))
+                    {
+                        <li>@Html.ActionLink("Monitor", "Index", "Monitor")</li>
+                    }
+                    <li>
+                        <a class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Help <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li>@Html.ActionLink("Terms and Conditions", "ToC", "Home")</li>
+                            <li>@Html.ActionLink("About", "About", "Home")</li>
+                            <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+                        </ul>
+                    </li>
+                </ul>
+                @Html.Partial("_LoginPartial")
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+        <h1></h1>
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - Go Green</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>
