@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<GoGreenV3.Models.MarkerModel>
 
 @{ ViewBag.Title = "Monitor"; }
-
+<script src="~/Scripts/jquery-3.1.1.js"></script>
 <script src="~/Scripts/gmaps-monitor.js"></script>
 <script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
 <script src="~/Scripts/firebase-config.js"></script>
@@ -14,7 +14,19 @@
             readFirebase();
             firebaseEvents();
             initMap();
-            randomizeLight();
+
+            // Delay the start of showing the markers on map. Async issues.
+            setTimeout(function() {
+                document.getElementById("loading").classList.remove("alert-info");
+                document.getElementById("loading").classList.add("alert-success");
+                document.getElementById("loading-head").innerHTML = "Load complete";
+                document.getElementById("loading-text").innerHTML = "";
+                $("#loading").fadeTo(3000, 500).slideUp(500, function(){
+                    $("#loading").slideUp(500);
+                });
+
+                randomizeLight();
+            }, 3000);
         }
     }
 </script>
@@ -52,6 +64,8 @@
             zoom: 17,
             center: { lat: 16.4023, lng: 120.5960 }
         });
+
+        infowindow = new google.maps.InfoWindow();
     }
 
     function randomizeLight() {
@@ -126,6 +140,10 @@
                     position: { lat: pos[n][2], lng: pos[n][3] },
                     icon: icon
                 });
+
+                google.maps.event.addListener(markers[n], "click", function() {
+
+                });
             }
         }, interval);
     }
@@ -199,6 +217,10 @@
     </div>
 
     <div class="col-md-9">
+        <div id="loading" class="alert alert-info">
+            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+            <strong id="loading-head">Loading</strong><text id="loading-text"> Please wait.</text>
+        </div>
         <div id="map-monitor"></div>
     </div>
 

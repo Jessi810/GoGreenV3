@@ -7,6 +7,8 @@ var database;
 // Google Maps variables
 var map;
 var markers = [];
+var infowindow;
+var infowindows = [];
 
 function initArrays(c, id, light, altered, lat, lng, status, working, controllable, type, loc, desc) {
     monitor[c] = new Array();
