@@ -41,6 +41,9 @@ namespace GoGreenV3.Models
 
     public class ChangePasswordViewModel
     {
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; }
+
         [Required]
         [DataType(DataType.Password)]
         [Display(Name = "Current password")]

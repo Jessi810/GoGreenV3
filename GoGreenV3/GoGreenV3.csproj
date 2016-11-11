@@ -184,6 +184,7 @@
     <Compile Include="Attributes\AccessDeniedAuthorizeAttribute.cs" />
     <Compile Include="Controllers\AccountAPIController.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AgencyAPIController.cs" />
     <Compile Include="Controllers\AgencyController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />

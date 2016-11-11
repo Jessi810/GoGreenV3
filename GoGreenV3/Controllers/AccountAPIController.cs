@@ -42,6 +42,36 @@ namespace GoGreenV3.Controllers
         {
         }
 
+        [System.Web.Http.Route("api/accountapi/changepassword")]
+        [System.Web.Http.HttpPatch]
+        [ResponseType(typeof(RegisterViewModel))]
+        public async Task<IHttpActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            var provider = new DpapiDataProtectionProvider("ChangePassword");
+            var context = new ApplicationDbContext();
+            UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+            UserManager.UserTokenProvider = new DataProtectorTokenProvider<ApplicationUser>(provider.Create("ChangePassword"));
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var findUser = await UserManager.FindByEmailAsync(model.Email);
+            if (findUser == null)
+            {
+                return BadRequest("Email not found");
+            }
+            var userId = findUser.Id;
+
+            var result = await UserManager.ChangePasswordAsync(userId, model.OldPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return Ok(model);
+            }
+
+            return BadRequest(ModelState);
+        }
+
         [System.Web.Http.Route("api/accountapi/register")]
         [System.Web.Http.HttpPost]
         [ResponseType(typeof(RegisterViewModel))]

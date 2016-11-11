@@ -21,7 +21,8 @@ namespace GoGreenV3
 
             config.Routes.MapHttpRoute(
                 name: "AccountApi",
-                routeTemplate: "api/{controller}/{action}"
+                routeTemplate: "api/{controller}/{action}/{id}",
+                defaults: new { id = RouteParameter.Optional }
             );
         }
     }
