@@ -196,11 +196,16 @@ namespace GoGreenV3.Controllers
         }
 
         //[System.Web.Http.Authorize]
-        [ValidateAntiForgeryToken]
-        [System.Web.Http.HttpPut]
+        //[ValidateAntiForgeryToken]
+        [System.Web.Http.HttpPatch]
         [System.Web.Http.Route("api/accountapi/editprofile", Name = "EditProfile")]
         public async Task<IHttpActionResult> EditProfile(EditProfileViewModel model)
         {
+            var provider = new DpapiDataProtectionProvider("EditProfile");
+            var context = new ApplicationDbContext();
+            UserManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+            UserManager.UserTokenProvider = new DataProtectorTokenProvider<ApplicationUser>(provider.Create("EditProfile"));
+
             var types = GetAllTypes();
             var agencies = GetAllAgencies();
 
@@ -215,9 +220,9 @@ namespace GoGreenV3.Controllers
                 ApplicationUser user = await UserManager.FindByEmailAsync(model.Email);
                 user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
-                //user.BirthDate = model.BirthDate;
-                //user.CellphoneNumber = model.CellphoneNumber;
-                //user.TelephoneNumber = model.TelephoneNumber;
+                user.BirthDate = model.BirthDate;
+                user.CellphoneNumber = model.CellphoneNumber;
+                user.TelephoneNumber = model.TelephoneNumber;
                 user.Type = model.Type;
                 user.Agency = model.Agency;
                 user.LastActive = DateTime.Now;

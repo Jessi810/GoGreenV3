@@ -9,6 +9,7 @@ var map;
 var markers = [];
 var infowindow;
 var infowindows = [];
+var content;
 
 function initArrays(c, id, light, altered, lat, lng, status, working, controllable, type, loc, desc) {
     monitor[c] = new Array();

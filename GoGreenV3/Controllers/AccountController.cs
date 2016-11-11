@@ -12,10 +12,11 @@ using GoGreenV3.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Owin.Host.SystemWeb;
+using System.Web.Http;
 
 namespace GoGreenV3.Controllers
 {
-    [Authorize]
+    [System.Web.Mvc.Authorize]
     public class AccountController : Controller
     {
         private AgencyDbContext db = new AgencyDbContext();
@@ -59,7 +60,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/Denied
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult Denied()
         {
             return View();
@@ -67,7 +68,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/Login
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
@@ -81,8 +82,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/Login
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login([Bind(Include = "Email,Password,ConfirmPassword")]LoginViewModel model, string returnUrl)
         {
@@ -126,7 +127,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/VerifyCode
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public async Task<ActionResult> VerifyCode(string provider, string returnUrl, bool rememberMe)
         {
             // Require that the user has already logged in via username/password or external login
@@ -139,8 +140,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/VerifyCode
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> VerifyCode([Bind(Include = "Code,ReturnUrl,RememberBrowser,RememberMe")] VerifyCodeViewModel model)
         {
@@ -177,8 +178,8 @@ namespace GoGreenV3.Controllers
             return View();
         }
 
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResendConfirmationEmail([Bind(Include = "Email")] ResendConfirmationEmailViewModel model)
         {
@@ -205,7 +206,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/Register
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult Register()
         {
             var types = GetAllTypes();
@@ -221,8 +222,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/Register
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Register([Bind(Include = "UserName,Email,Password,ConfirmPassword,FirstName,LastName,BirthDate,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] RegisterViewModel model)
         {
@@ -319,7 +320,7 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/EditProfile
-        [HttpPost]
+        [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EditProfile([Bind(Include = "UserName,Email,FirstName,LastName,BirthDate,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] EditProfileViewModel model)
         {
@@ -379,7 +380,7 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/EditProfile
-        [HttpPost]
+        [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> EditAgency([Bind(Include = "Type,Agency,LastActive")]EditAgencyViewModel model)
         {
@@ -445,7 +446,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ConfirmEmail
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public async Task<ActionResult> ConfirmEmail(string userId, string code)
         {
             if (userId == null || code == null)
@@ -467,7 +468,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ForgotPassword
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult ForgotPassword()
         {
             return View();
@@ -475,8 +476,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/ForgotPassword
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ForgotPassword([Bind(Include = "Email")] ForgotPasswordViewModel model)
         {
@@ -503,7 +504,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ForgotPasswordConfirmation
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult ForgotPasswordConfirmation()
         {
             return View();
@@ -511,7 +512,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ResetPassword
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult ResetPassword(string code)
         {
             return code == null ? View("Error") : View();
@@ -519,8 +520,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/ResetPassword
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ResetPassword([Bind(Include = "Email,Password,ConfirmPassword,Code")] ResetPasswordViewModel model)
         {
@@ -545,7 +546,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ResetPasswordConfirmation
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult ResetPasswordConfirmation()
         {
             return View();
@@ -553,8 +554,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/ExternalLogin
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public ActionResult ExternalLogin(string provider, string returnUrl)
         {
@@ -564,7 +565,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/SendCode
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public async Task<ActionResult> SendCode(string returnUrl, bool rememberMe)
         {
             var userId = await SignInManager.GetVerifiedUserIdAsync();
@@ -579,8 +580,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/SendCode
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SendCode(SendCodeViewModel model)
         {
@@ -599,7 +600,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ExternalLoginCallback
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public async Task<ActionResult> ExternalLoginCallback(string returnUrl)
         {
             var loginInfo = await AuthenticationManager.GetExternalLoginInfoAsync();
@@ -629,8 +630,8 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/ExternalLoginConfirmation
-        [HttpPost]
-        [AllowAnonymous]
+        [System.Web.Mvc.HttpPost]
+        [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationViewModel model, string returnUrl)
         {
@@ -667,7 +668,7 @@ namespace GoGreenV3.Controllers
 
         //
         // POST: /Account/LogOff
-        [HttpPost]
+        [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> LogOff()
         {
@@ -681,7 +682,7 @@ namespace GoGreenV3.Controllers
 
         //
         // GET: /Account/ExternalLoginFailure
-        [AllowAnonymous]
+        [System.Web.Mvc.AllowAnonymous]
         public ActionResult ExternalLoginFailure()
         {
             return View();

@@ -54,6 +54,26 @@
 
             monitor[i][2] = ss.light;
             monitor[i][3] = ss.altered;
+
+            var ic = { url: "/Images/" + ss.light + ".png" }
+
+            markers[i] = null;
+            markers[i] = new google.maps.Marker({
+                id: monitor[i][1],
+                map: map,
+                position: { lat: pos[i][2], lng: pos[i][3] },
+                icon: ic
+            });
+
+            if (monitor[i][3]) {
+                google.maps.event.addListener(markers[i], "click", (function(marker, content, infowindow) { 
+                    return function() {
+                        content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small' onclick=''>Relinquish</button>"
+                        infowindow.setContent(content);
+                        infowindow.open(map, this);
+                    };
+                })(this, content, infowindow));
+            }
         });
     }
 
@@ -64,7 +84,8 @@
             zoom: 17,
             center: { lat: 16.4023, lng: 120.5960 }
         });
-
+        
+        content = "<button class='btn btn-default btn-small'>Relinquish</button>";
         infowindow = new google.maps.InfoWindow();
     }
 
@@ -97,6 +118,16 @@
             database.child("markers/" + monitor[n][1]).update({
                 light: color
             });
+
+            if (monitor[n][3]) {
+                google.maps.event.addListener(markers[n], "click", (function(marker, content, infowindow) { 
+                    return function() {
+                        content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small'>Relinquish</button>"
+                        infowindow.setContent(content);
+                        infowindow.open(map, this);
+                    };
+                })(this, content, infowindow));
+            }
         }
 
         countdown(5000);
@@ -136,14 +167,21 @@
 
                 markers[n] = null;
                 markers[n] = new google.maps.Marker({
+                    id: monitor[n][1],
                     map: map,
                     position: { lat: pos[n][2], lng: pos[n][3] },
                     icon: icon
                 });
 
-                google.maps.event.addListener(markers[n], "click", function() {
-
-                });
+                if (monitor[n][3]) {
+                    google.maps.event.addListener(markers[n], "click", (function(marker, content, infowindow) { 
+                        return function() {
+                            content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small'>Relinquish</button>"
+                            infowindow.setContent(content);
+                            infowindow.open(map, this);
+                        };
+                    })(this, content, infowindow));
+                }
             }
         }, interval);
     }
@@ -171,7 +209,7 @@
             "green", false,
             @item.Latitude, @item.Longitude,
             "@item.Status", @item.IsWorking.ToString().ToLower(), @item.IsControllable.ToString().ToLower(),
-            @item.Type, "@item.Location", "@item.Description"
+            "@item.Type", "@item.Location", "@item.Description"
             );
         database.child("markers/" + @item.Id).update({
             index: ctr2()
