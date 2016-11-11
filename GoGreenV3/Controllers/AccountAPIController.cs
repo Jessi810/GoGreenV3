@@ -195,10 +195,10 @@ namespace GoGreenV3.Controllers
             }
         }
 
-        [System.Web.Http.Authorize]
+        //[System.Web.Http.Authorize]
         [ValidateAntiForgeryToken]
         [System.Web.Http.HttpPut]
-        [System.Web.Http.Route("api/markerapi/editprofile", Name = "EditProfile")]
+        [System.Web.Http.Route("api/accountapi/editprofile", Name = "EditProfile")]
         public async Task<IHttpActionResult> EditProfile(EditProfileViewModel model)
         {
             var types = GetAllTypes();
@@ -209,13 +209,15 @@ namespace GoGreenV3.Controllers
 
             if (ModelState.IsValid)
             {
-                ApplicationUser user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                Debug.WriteLine(model.Email);
+                //ApplicationUser user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
 
+                ApplicationUser user = await UserManager.FindByEmailAsync(model.Email);
                 user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
-                user.BirthDate = model.BirthDate;
-                user.CellphoneNumber = model.CellphoneNumber;
-                user.TelephoneNumber = model.TelephoneNumber;
+                //user.BirthDate = model.BirthDate;
+                //user.CellphoneNumber = model.CellphoneNumber;
+                //user.TelephoneNumber = model.TelephoneNumber;
                 user.Type = model.Type;
                 user.Agency = model.Agency;
                 user.LastActive = DateTime.Now;
@@ -223,7 +225,7 @@ namespace GoGreenV3.Controllers
                 IdentityResult result = await UserManager.UpdateAsync(user);
                 if (result.Succeeded)
                 {
-                    return Ok(model);
+                    return Ok(user);
                 }
             }
 

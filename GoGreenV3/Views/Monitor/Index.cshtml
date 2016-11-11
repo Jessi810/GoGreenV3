@@ -1,181 +1,164 @@
 ﻿@model IEnumerable<GoGreenV3.Models.MarkerModel>
 
-@{
-    ViewBag.Title = "Monitor";
-}
+@{ ViewBag.Title = "Monitor"; }
 
 <script src="~/Scripts/gmaps-monitor.js"></script>
+<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
+<script src="~/Scripts/firebase-config.js"></script>
+
 <script>
-    // Google Maps variables
-    var m = [];
-    var map;
-    var marker;
-    var markersArray = [];  // Marker objects
-    var markers = [];       // Google Maps Marker objects
-    var infowindow;
-    var infoWindowAlter;
-    var markerControl = "<button class='btn btn-success btn-small' style='width: 120px' onclick='alterLight()'>Green</button><button class='btn btn-danger btn-small' style='width: 120px'>Red</button>";
-    var alterControl = "<button class='btn btn-success btn-small' style='width: 120px' onclick='alterLight()'>Relinquish Control</button>"
-    
-    // Firebase variables
-    var database;
+    database = firebase.database().ref();
 
-    function waitPage() {
-        window.onload = function() {
-            initGoogleMapsVariables();
-
-            database = firebase.database().ref();
-
+    function loaded() {
+        window.onload = function () {
+            readFirebase();
+            firebaseEvents();
             initMap();
-            setMarkers();
-        };
+            randomizeLight();
+        }
+    }
+</script>
+
+<script>
+    function readFirebase() {
+        database.child("markers").once("value", function(snapshot) {
+            for (var n = 0; n < monitor.length; n++) {
+                snapshot.ref.child(monitor[n][1]).once("value", function(mSnapshot) {
+                    var mss = mSnapshot.val();
+                    monitor[n][3] = mss.altered;
+                    console.log(mss.altered);
+                });
+            }
+        });
+    }
+
+    function firebaseEvents() {
+        console.log("Firebase Events");
+
+        database.child("markers").on("child_changed", function(snapshot) {
+            var key = snapshot.key;
+            var ss = snapshot.val();
+            var i = ss.index;
+
+            monitor[i][2] = ss.light;
+            monitor[i][3] = ss.altered;
+        });
     }
 
     function initMap() {
+        console.log("Google Maps");
+
         map = new google.maps.Map(document.getElementById('map-monitor'), {
             zoom: 17,
             center: { lat: 16.4023, lng: 120.5960 }
         });
-
-        google.maps.event.addListener(map, 'click', function() {
-            infowindow.close();
-        });
-
-        google.maps.event.addListener(map, 'drag', function() {
-            infowindow.close();
-        });
     }
 
-    function initGoogleMapsVariables() {
-        infowindow = new google.maps.InfoWindow({
-            content: markerControl
-        });
-        infowindowAlter = new google.maps.InfoWindow({
-            content: alterControl
-        });
-    }
+    function randomizeLight() {
+        console.log("Randomize Light");
 
-    function setMarkers() {
-        var color;
+        var rng;
+        var color, icon;
 
-        for (var c = 0; c < markersArray.length; c++) {
-            color = initColorUrl(markersArray[c][1]);
+        for (var n = 0; n < monitor.length; n++) {
+            console.log("---" + monitor[n][3]);
+            if (monitor[n][3]) {
+                color = "green";
+                icon = { url: "/Images/altered.png" }
+            }
+            else {
+                rng = Math.floor((Math.random() * 2) + 1);
+                color = getRandomColor(rng);
+                icon = { url: "/Images/" + color + ".png" }
+            }
 
-            markers[c] = new google.maps.Marker({
-                id: markersArray[c][0],
+            markers[n] = new google.maps.Marker({
                 map: map,
-                position: { lat: markersArray[c][3], lng: markersArray[c][4] },
-                icon: color
+                position: { lat: pos[n][2], lng: pos[n][3] },
+                icon: icon
             });
 
-            m[c][2] = color.substring(color.lastIndexOf('/') + 1, color.lastIndexOf('.'));
+            monitor[n][2] = color;
 
-            database.child('markers/' + markersArray[c][0]).update({
-                light: color.substring(color.lastIndexOf('/') + 1, color.lastIndexOf('.'))
-            });
-
-            google.maps.event.addListener(markers[c], 'click', function () {
-                infowindow.open(map, this);
+            database.child("markers/" + monitor[n][1]).update({
+                light: color
             });
         }
 
-        countdown(7000);
-    }
-    
-    function initColorUrl(type) {
-        switch (type) {
-            case '1': return '/Images/green.png';
-            case '2': return '/Images/red.png';
-            case '3': return '/Images/green.png';
-        }
-
-        return null;
-    }
-    
-    function initColorUrl2(color) {
-        switch (color) {
-            case 'green': return '/Images/green.png';
-            case 'red': return '/Images/red.png';
-            case 'yellow': return '/Images/yellow.png';
-            case 'altered': return '/Images/altered.png';
-        }
-
-        return null;
+        countdown(5000);
     }
 
     function countdown(interval) {
-        console.log('Countdown started');
+        console.log("Countdown");
 
-        var traffic = setInterval(function() {
-            for (var c = 0; c < markers.length; c++) {
+        var cd = setInterval(function() {
+            var color, icon;
 
-                if (m[c][2] == 'green' && m[c][3] == 0) {
-                    m[c][2] = 'red';
-
-                    database.child('markers/' + m[c][0]).update({
-                        light: 'red'
-                    });
-                    
-                    markers[c] = null;
-                    markers[c] = new google.maps.Marker({
-                        id: markersArray[c][0],
-                        map: map,
-                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
-                        icon: initColorUrl2('red')
-                    });
-                } // if
-                else if (m[c][2] == 'red' && m[c][3] == 0) {
-                    m[c][2] = 'green';
-
-                    database.child('markers/' + m[c][0]).update({
-                        light: 'green'
+            for (var n = 0; n < monitor.length; n++) {
+                if (monitor[n][3]) {
+                    database.child("markers/" + monitor[n][1]).update({
+                        light: "green"
                     });
 
-                    markers[c] = null;
-                    markers[c] = new google.maps.Marker({
-                        id: markersArray[c][0],
-                        map: map,
-                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
-                        icon: initColorUrl2('green')
-                    });
-                } // else if
-            } // for
-        }, interval); // setInterval()
-    } // countdown()
-    
-    function countdown2(interval) {
-        var time = interval;
-
-        var traffic2 = setInterval(function() {
-            for (var c = 0; c < markers.length; c++) {
-                if (m[c][2] == 'green' && m[c][3] == 0) {
-                    m[c][2] = 'yellow';
-
-                    database.child('markers/' + m[c][0]).update({
-                        light: 'yellow'
-                    });
-
-                    markers[c] = null;
-                    markers[c] = new google.maps.Marker({
-                        id: markersArray[c][0],
-                        map: map,
-                        position: { lat: markersArray[c][3], lng: markersArray[c][4] },
-                        icon: initColorUrl2('yellow')
-                    });
+                    color = getRandomColor(4);
+                    icon = { url: "/Images/" + color + ".png" }
                 }
-            }
+                else if (monitor[n][2] == "green" && !monitor[n][3]) {
+                    database.child("markers/" + monitor[n][1]).update({
+                        light: "red"
+                    });
 
-            if (time != 7000) {
-                console.log("Added 3 sec");
-                time += 3000;
+                    color = getRandomColor(2);
+                    icon = { url: "/Images/" + color + ".png" }
+                }
+                else if (monitor[n][2] == "red" && !monitor[n][3]) {
+                    database.child("markers/" + monitor[n][1]).update({
+                        light: "green"
+                    });
+
+                    color = getRandomColor(1);
+                    icon = { url: "/Images/" + color + ".png" }
+                }
+
+                markers[n] = null;
+                markers[n] = new google.maps.Marker({
+                    map: map,
+                    position: { lat: pos[n][2], lng: pos[n][3] },
+                    icon: icon
+                });
             }
-        }, time)
+        }, interval);
+    }
+</script>
+
+<script>
+    function getRandomColor(rng) {
+        switch(rng) {
+            case 1: return "green";
+            case 2: return "red";
+            case 3: return "yellow";
+            case 4: return "altered";
+        }
+
+        return null;
     }
 </script>
 
 @foreach (var item in Model)
 {
-    <script>initMarkerArray(@item.Id, '@item.Type', '@item.Status', @item.Latitude, @item.Longitude, @item.IsWorking.ToString().ToLower(), @item.IsControllable.ToString().ToLower(), ctr());</script>
+    <script>
+        initArrays(
+            ctr(),
+            @item.Id,
+            "green", false,
+            @item.Latitude, @item.Longitude,
+            "@item.Status", @item.IsWorking.ToString().ToLower(), @item.IsControllable.ToString().ToLower(),
+            @item.Type, "@item.Location", "@item.Description"
+            );
+        database.child("markers/" + @item.Id).update({
+            index: ctr2()
+        });
+    </script>
 }
 
 <div class="row">
@@ -205,55 +188,25 @@
             <div class="col-md-12">
                 <img src="~/Images/yellow.png" />Yellow Light
             </div>
+            <div class="col-md-12">
+                <img src="~/Images/altered.png" />Altered (Green)
+            </div>
         </div>
 
         <div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
             <h4>Rescuer</h4>
-            <button onclick="Alter();">Alter</button>
         </div>
-
-        @*<div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
-            <strong>Tips:</strong><br />
-            <ul>
-                <li>Click marker to alter light.</li>
-            </ul>
-        </div>*@
     </div>
 
     <div class="col-md-9">
         <div id="map-monitor"></div>
     </div>
+
+    <div class="col-md-12 img-rounded" style="background-color: rgb(239, 234, 234); padding: 6px 12px; margin-top: 6px; margin-bottom: 6px;">
+        <div id="traffic-light">
+
+        </div>
+    </div>
 </div>
-<script>
-    function Alter() {
-        m[4][3] = 1;
 
-        database.child('markers/27').update({
-            altered: true
-        });
-
-        markers[4] = null;
-        markers[4] = new google.maps.Marker({
-            id: markersArray[4][0],
-            map: map,
-            position: { lat: markersArray[4][3], lng: markersArray[4][4] },
-            icon: initColorUrl2('altered')
-        });
-
-        google.maps.event.addListener(markers[4], 'click', function () {
-            infowindowAlter.open(map, this);
-        });
-    }
-
-    function alterLight() {
-        database.child('markers/27').update({
-            altered: false
-        });
-        m[4][3] = 0;
-        infowindowAlter.close();
-    }
-</script>
-<script src="https://www.gstatic.com/firebasejs/3.5.3/firebase.js"></script>
-<script src="~/Scripts/firebase-config.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyBnRjrz-o64fdMh2-qS6xK1WeKIMwcM76I&libraries=places&callback=waitPage" async defer></script>
-<script src="~/Scripts/traffic-light-simulator.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyBnRjrz-o64fdMh2-qS6xK1WeKIMwcM76I&libraries=places&callback=loaded" async defer></script>
