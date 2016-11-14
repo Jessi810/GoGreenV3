@@ -248,9 +248,7 @@ namespace GoGreenV3.Controllers
                 //ApplicationUser user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
 
                 ApplicationUser user = await UserManager.FindByEmailAsync(model.Email);
-                user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
-                user.BirthDate = model.BirthDate;
                 user.CellphoneNumber = model.CellphoneNumber;
                 user.TelephoneNumber = model.TelephoneNumber;
                 user.Type = model.Type;

@@ -99,6 +99,10 @@ namespace GoGreenV3.Models
         public string FirstName { get; set; }
 
         [Required]
+        public string Gender { get; set; }
+        public IEnumerable<SelectListItem> Genders { get; set; }
+
+        [Required]
         [RegularExpression(@"^[a-zA-Z''-'\s]{2,100}$", ErrorMessage = "{0} should only contain letters and hyphen and 2-100 in length")]
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
@@ -147,11 +151,6 @@ namespace GoGreenV3.Models
 
         [Required]
         [RegularExpression(@"^[a-zA-Z''-'\s]{2,100}$", ErrorMessage = "{0} should only contain letters and hyphen and 2-100 in length")]
-        [Display(Name = "First Name")]
-        public string FirstName { get; set; }
-
-        [Required]
-        [RegularExpression(@"^[a-zA-Z''-'\s]{2,100}$", ErrorMessage = "{0} should only contain letters and hyphen and 2-100 in length")]
         [Display(Name = "Last Name")]
         public string LastName { get; set; }
 
@@ -162,10 +161,6 @@ namespace GoGreenV3.Models
         [RegularExpression(@"^[0-9]{7}$", ErrorMessage = "{0} is invalid.")]
         [Display(Name = "Telephone #")]
         public string TelephoneNumber { get; set; }
-
-        [DataType(DataType.Date)]
-        [Display(Name = "Birthdate")]
-        public DateTime? BirthDate { get; set; }
 
         [Required]
         [Display(Name = "Agency Type")]

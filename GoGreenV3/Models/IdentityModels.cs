@@ -22,6 +22,7 @@ namespace GoGreenV3.Models
 
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string Gender { get; set; }
         public string CellphoneNumber { get; set; }
         public string TelephoneNumber { get; set; }
         public DateTime? BirthDate { get; set; }

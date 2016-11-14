@@ -98,7 +98,15 @@ namespace GoGreenV3.Controllers
         // GET: Marker/Create
         public ActionResult Create()
         {
-            return View();
+            var types = GetAllTypes();
+            var statuses = GetStatus();
+
+            var model = new MarkerModel();
+
+            model.Types = GetSelectListItems(types);
+            model.Statuses = GetSelectListItems(statuses);
+
+            return View(model);
         }
 
         // POST: Marker/Create
@@ -106,6 +114,12 @@ namespace GoGreenV3.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create([Bind(Include = "Id,Type,Latitude,Longitude,Status,Location,Description,IsControllable,IsWorking")] MarkerModel model)
         {
+            var types = GetAllTypes();
+            var statuses = GetStatus();
+
+            model.Types = GetSelectListItems(types);
+            model.Statuses = GetSelectListItems(statuses);
+
             if (ModelState.IsValid)
             {
                 db.Markers.Add(model);
@@ -141,7 +155,15 @@ namespace GoGreenV3.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
+            var types = GetAllTypes();
+            var statuses = GetStatus();
+
             MarkerModel markerModel = db.Markers.Find(id);
+
+            markerModel.Types = GetSelectListItems(types);
+            markerModel.Statuses = GetSelectListItems(statuses);
+
             if (markerModel == null)
             {
                 return HttpNotFound();
@@ -154,6 +176,12 @@ namespace GoGreenV3.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit([Bind(Include = "Id,Type,Latitude,Longitude,Status,Location,Description,IsControllable,IsWorking")] MarkerModel markerModel)
         {
+            var types = GetAllTypes();
+            var statuses = GetStatus();
+
+            markerModel.Types = GetSelectListItems(types);
+            markerModel.Statuses = GetSelectListItems(statuses);
+
             if (ModelState.IsValid)
             {
                 db.Entry(markerModel).State = EntityState.Modified;
@@ -188,6 +216,38 @@ namespace GoGreenV3.Controllers
             db.Markers.Remove(markerModel);
             db.SaveChanges();
             return RedirectToAction("DeleteToFirebase", new { mId = mid });
+        }
+
+        private IEnumerable<string> GetAllTypes()
+        {
+            return new List<string>
+            {
+                "Crossing Light", "Pedestrian Light"
+            };
+        }
+
+        private IEnumerable<string> GetStatus()
+        {
+            return new List<string>
+            {
+                "Online", "Offline"
+            };
+        }
+
+        private IEnumerable<SelectListItem> GetSelectListItems(IEnumerable<string> elements)
+        {
+            var selectList = new List<SelectListItem>();
+
+            foreach (var element in elements)
+            {
+                selectList.Add(new SelectListItem
+                {
+                    Value = element,
+                    Text = element
+                });
+            }
+
+            return selectList;
         }
 
         protected override void Dispose(bool disposing)

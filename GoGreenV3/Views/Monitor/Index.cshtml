@@ -17,13 +17,17 @@
 
             // Delay the start of showing the markers on map. Async issues.
             setTimeout(function() {
-                document.getElementById("loading").classList.remove("alert-info");
-                document.getElementById("loading").classList.add("alert-success");
-                document.getElementById("loading-head").innerHTML = "Load complete";
-                document.getElementById("loading-text").innerHTML = "";
-                $("#loading").fadeTo(3000, 500).slideUp(500, function(){
-                    $("#loading").slideUp(500);
-                });
+                try {
+                    document.getElementById("loading").classList.remove("alert-info");
+                    document.getElementById("loading").classList.add("alert-success");
+                    document.getElementById("loading-head").innerHTML = "Load complete";
+                    document.getElementById("loading-text").innerHTML = "";
+                    $("#loading").fadeTo(3000, 500).slideUp(500, function(){
+                        $("#loading").slideUp(500);
+                    });
+                } catch(error) {
+
+                }
 
                 randomizeLight();
             }, 3000);
@@ -33,12 +37,14 @@
 
 <script>
     function readFirebase() {
+        console.log("Read Firebase");
+
         database.child("markers").once("value", function(snapshot) {
             for (var n = 0; n < monitor.length; n++) {
                 snapshot.ref.child(monitor[n][1]).once("value", function(mSnapshot) {
                     var mss = mSnapshot.val();
+
                     monitor[n][3] = mss.altered;
-                    console.log(mss.altered);
                 });
             }
         });
@@ -65,15 +71,18 @@
                 icon: ic
             });
 
-            if (monitor[i][3]) {
-                google.maps.event.addListener(markers[i], "click", (function(marker, content, infowindow) { 
-                    return function() {
-                        content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small' onclick=''>Relinquish</button>"
-                        infowindow.setContent(content);
-                        infowindow.open(map, this);
-                    };
-                })(this, content, infowindow));
-            }
+            setInfoWindow(i);
+
+            snapshot.ref.child(key + "/altered").once("child_changed", function() {
+                $.ajax({
+                    type: "POST",
+                    url: "https://localhost:44300/api/arapi",
+                    //url: "https://172.16.4.67:44300/api/arapi",
+                    data: { date: "11/11/2016", time: "12:00:00 AM", latitude: 16.123, longitude: 120.456, location: "Baguio City" },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json"
+                });
+            });
         });
     }
 
@@ -85,7 +94,6 @@
             center: { lat: 16.4023, lng: 120.5960 }
         });
         
-        content = "<button class='btn btn-default btn-small'>Relinquish</button>";
         infowindow = new google.maps.InfoWindow();
     }
 
@@ -96,7 +104,6 @@
         var color, icon;
 
         for (var n = 0; n < monitor.length; n++) {
-            console.log("---" + monitor[n][3]);
             if (monitor[n][3]) {
                 color = "green";
                 icon = { url: "/Images/altered.png" }
@@ -119,22 +126,14 @@
                 light: color
             });
 
-            if (monitor[n][3]) {
-                google.maps.event.addListener(markers[n], "click", (function(marker, content, infowindow) { 
-                    return function() {
-                        content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small'>Relinquish</button>"
-                        infowindow.setContent(content);
-                        infowindow.open(map, this);
-                    };
-                })(this, content, infowindow));
-            }
+            setInfoWindow(n);
         }
 
         countdown(5000);
     }
 
     function countdown(interval) {
-        console.log("Countdown");
+        console.log("Countdown " + ctr3());
 
         var cd = setInterval(function() {
             var color, icon;
@@ -173,21 +172,33 @@
                     icon: icon
                 });
 
-                if (monitor[n][3]) {
-                    google.maps.event.addListener(markers[n], "click", (function(marker, content, infowindow) { 
-                        return function() {
-                            content = "<button id='iw-" + this.id + "' class='btn btn-default btn-small'>Relinquish</button>"
-                            infowindow.setContent(content);
-                            infowindow.open(map, this);
-                        };
-                    })(this, content, infowindow));
-                }
+                setInfoWindow(n);
             }
         }, interval);
     }
 </script>
 
 <script>
+    function setInfoWindow(i) {
+        if (monitor[i][3]) {
+            google.maps.event.addListener(markers[i], "click", (function(marker, content, infowindow) { 
+                return function() {
+                    contentrelinquish = "<button id='iw-" + this.id + "' class='btn btn-default btn-small' onclick='relinquish(" + this.id + ")'>Relinquish</button>";
+                    infowindow.setContent(contentrelinquish);
+                    infowindow.open(map, this);
+                };
+            })(this, content, infowindow));
+        } else {
+            google.maps.event.addListener(markers[i], "click", (function(marker, content, infowindow) { 
+                return function() {
+                    contentalter = "<button id='iw-" + this.id + "' class='btn btn-default btn-small' onclick='alter(" + this.id + ")'>Alter</button>";
+                    infowindow.setContent(contentalter);
+                    infowindow.open(map, this);
+                };
+            })(this, content, infowindow));
+        }
+    }
+
     function getRandomColor(rng) {
         switch(rng) {
             case 1: return "green";
@@ -197,6 +208,22 @@
         }
 
         return null;
+    }
+
+    function alter(id) {
+        infowindow.close();
+
+        database.child("markers/" + id).update({
+            altered: true
+        });
+    }
+
+    function relinquish(id) {
+        infowindow.close();
+
+        database.child("markers/" + id).update({
+            altered: false
+        });
     }
 </script>
 
@@ -241,9 +268,9 @@
             <div class="col-md-12">
                 <img src="~/Images/red.png" />Red Light
             </div>
-            <div class="col-md-12">
+            @*<div class="col-md-12">
                 <img src="~/Images/yellow.png" />Yellow Light
-            </div>
+            </div>*@
             <div class="col-md-12">
                 <img src="~/Images/altered.png" />Altered (Green)
             </div>

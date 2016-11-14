@@ -16,6 +16,7 @@ namespace GoGreenV3.Models
         [Required]
         [Display(Name = "Type")]
         public string Type { get; set; }
+        public IEnumerable<SelectListItem> Types { get; set; }
 
         [Required]
         [Display(Name = "Latitude")]
@@ -28,6 +29,7 @@ namespace GoGreenV3.Models
         [Required]
         [Display(Name = "Status")]
         public string Status { get; set; }
+        public IEnumerable<SelectListItem> Statuses { get; set; }
 
         [StringLength(maximumLength: 200, ErrorMessage = "Up to {0} characters is only allowed")]
         [Display(Name = "Location")]

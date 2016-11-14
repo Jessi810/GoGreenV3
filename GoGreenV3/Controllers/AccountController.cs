@@ -211,11 +211,13 @@ namespace GoGreenV3.Controllers
         {
             var types = GetAllTypes();
             var agencies = GetAllAgencies();
+            var genders = GetGenders();
 
             var model = new RegisterViewModel();
 
             model.Types = GetSelectListItems(types);
             model.Agencies = GetSelectListItems(agencies);
+            model.Genders = GetSelectListItems(genders);
 
             return View(model);
         }
@@ -225,13 +227,15 @@ namespace GoGreenV3.Controllers
         [System.Web.Mvc.HttpPost]
         [System.Web.Mvc.AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register([Bind(Include = "UserName,Email,Password,ConfirmPassword,FirstName,LastName,BirthDate,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] RegisterViewModel model)
+        public async Task<ActionResult> Register([Bind(Include = "UserName,Email,Password,ConfirmPassword,FirstName,LastName,Gender,BirthDate,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] RegisterViewModel model)
         {
             var types = GetAllTypes();
             var agencies = GetAllAgencies();
+            var genders = GetGenders();
 
             model.Types = GetSelectListItems(types);
             model.Agencies = GetSelectListItems(agencies);
+            model.Genders = GetSelectListItems(genders);
 
             if (ModelState.IsValid)
             {
@@ -241,6 +245,7 @@ namespace GoGreenV3.Controllers
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
+                    Gender = model.Gender,
                     BirthDate = model.BirthDate,
                     CellphoneNumber = model.CellphoneNumber,
                     TelephoneNumber = model.TelephoneNumber,
@@ -322,7 +327,7 @@ namespace GoGreenV3.Controllers
         // POST: /Account/EditProfile
         [System.Web.Mvc.HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditProfile([Bind(Include = "UserName,Email,FirstName,LastName,BirthDate,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] EditProfileViewModel model)
+        public async Task<ActionResult> EditProfile([Bind(Include = "UserName,Email,LastName,CellphoneNumber,TelephoneNumber,Type,Agency,MemberSince,LastActive,AvatarUrl")] EditProfileViewModel model)
         {
             var types = GetAllTypes();
             var agencies = GetAllAgencies();
@@ -336,9 +341,7 @@ namespace GoGreenV3.Controllers
 
                 user.UserName = model.Email;
                 user.Email = model.Email;
-                user.FirstName = model.FirstName;
                 user.LastName = model.LastName;
-                user.BirthDate = model.BirthDate;
                 user.CellphoneNumber = model.CellphoneNumber;
                 user.TelephoneNumber = model.TelephoneNumber;
                 user.Type = model.Type;
@@ -410,7 +413,7 @@ namespace GoGreenV3.Controllers
             // If we got this far, something failed, redisplay form
             return View(model);
         }
-
+        
         private IEnumerable<string> GetAllTypes()
         {
             return new List<string>
@@ -418,6 +421,14 @@ namespace GoGreenV3.Controllers
                 "Hospital",
                 "Police Department",
                 "Fire Station"
+            };
+        }
+
+        private IEnumerable<string> GetGenders()
+        {
+            return new List<string>
+            {
+                "Male", "Female"
             };
         }
 
